@@ -34,9 +34,10 @@ class S3Lambda extends RequestHandler[S3Event, Int] {
     * @param event an S3 Event like "s3:ObjectCreated:*", and any one of the S3 Events available in enum S3Event
     * @return
     */
-  def addBucketNotification(lambdaFuncARN: String, event: String) = {
+  def setBucketNotification(bucketName: String, lambdaFuncARN: String, event: String) = {
     val conf = new BucketNotificationConfiguration()
     conf.addConfiguration("lambdaConfig", new LambdaConfiguration(lambdaFuncARN, event))
+    amazonS3Client.setBucketNotificationConfiguration(bucketName, conf)
   }
 
 }
@@ -47,6 +48,7 @@ object S3Demo extends App {
   val fileToUpload = new File(myFile)
   val bucketName = "myBucket"
   val s3LambdaClient = new S3Lambda
+  s3LambdaClient.setBucketNotification(bucketName, "", "s3:ObjectCreated:*")
   val data = s3LambdaClient.readFromS3(bucketName, myFile)
   s3LambdaClient.createBucket(bucketName)
   s3LambdaClient.uploadToS3(bucketName, myFile, fileToUpload)
