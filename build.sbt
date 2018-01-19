@@ -12,3 +12,5 @@ libraryDependencies += "com.amazonaws" % "aws-java-sdk" % "1.11.265"
 libraryDependencies += "io.github.mkotsur" %% "aws-lambda-scala" % "0.0.10"
 // https://mvnrepository.com/artifact/com.amazonaws/aws-lambda-java-events
 libraryDependencies += "com.amazonaws" % "aws-lambda-java-events" % "2.0.2"
+// https://mvnrepository.com/artifact/org.scalatest/scalatest
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.4" % Test

@@ -1,22 +1,18 @@
 import java.io.File
 
-import com.amazonaws.auth.BasicAWSCredentials
 import com.amazonaws.services.lambda.runtime.events.S3Event
 import com.amazonaws.services.lambda.runtime.{Context, RequestHandler}
 import com.amazonaws.services.s3.AmazonS3ClientBuilder
+import com.amazonaws.services.s3.model.{BucketNotificationConfiguration, LambdaConfiguration}
 
 import scala.io.Source
 
-class S3Lambda extends RequestHandler[S3Event, Int]{
+class S3Lambda extends RequestHandler[S3Event, Int] {
 
-  val AWS_ACCESS_KEY = ""
-  val AWS_SECRET_KEY = ""
-
-  val aWSCredentials = new BasicAWSCredentials(AWS_ACCESS_KEY, AWS_SECRET_KEY)
-  val amazonS3Client = AmazonS3ClientBuilder.defaultClient()
+  private val amazonS3Client = AmazonS3ClientBuilder.defaultClient()
 
   override def handleRequest(event: S3Event, context: Context): Int = {
-        event.getRecords.size()
+    event.getRecords.size()
   }
 
   def createBucket(bucketName: String) = {
@@ -32,18 +28,27 @@ class S3Lambda extends RequestHandler[S3Event, Int]{
     Source.fromInputStream(s3Object.getObjectContent).getLines()
   }
 
+  /**
+    *
+    * @param lambdaFuncARN Amazon Resource Name(ARN) of the Lambda function
+    * @param event an S3 Event like "s3:ObjectCreated:*", and any one of the S3 Events available in enum S3Event
+    * @return
+    */
+  def addBucketNotification(lambdaFuncARN: String, event: String) = {
+    val conf = new BucketNotificationConfiguration()
+    conf.addConfiguration("lambdaConfig", new LambdaConfiguration(lambdaFuncARN, event))
+  }
+
 }
 
 object S3Demo extends App {
 
   private val myFile = "myFile"
-
-  val fileToUpload = new File("myFile")
+  val fileToUpload = new File(myFile)
   val bucketName = "myBucket"
   val s3LambdaClient = new S3Lambda
-  s3LambdaClient.createBucket(bucketName)
-
   val data = s3LambdaClient.readFromS3(bucketName, myFile)
+  s3LambdaClient.createBucket(bucketName)
   s3LambdaClient.uploadToS3(bucketName, myFile, fileToUpload)
 
   for (line <- data) {
